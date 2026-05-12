@@ -63,11 +63,18 @@
     font-weight: bold;
   }
 
-  .amount-value {
-    font-size: 34px;
+  .amount-input {
+    margin-top: 12px;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 30px;
     font-weight: bold;
     color: #1e3a8a;
-    margin-top: 6px;
+    box-sizing: border-box;
+    background: white;
   }
 
   label {
@@ -183,8 +190,15 @@
   <div class="content">
     <div id="paymentSection">
       <div class="amount-box">
-        <div class="amount-label">TOTAL DUE</div>
-        <div class="amount-value" id="amountDisplay">$125.00</div>
+        <div class="amount-label">PAYMENT AMOUNT</div>
+        <input
+          id="amountInput"
+          class="amount-input"
+          type="number"
+          min="1"
+          step="0.01"
+          placeholder="Enter amount"
+        />
       </div>
 
       <div class="error" id="errorBox"></div>
@@ -225,13 +239,6 @@
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-
-  const amount = params.get("amount") || "125.00";
-  const agentId = params.get("agentId") || "";
-
-  document.getElementById("amountDisplay").textContent = "$" + amount;
-
   function detectCardType(number) {
     if (/^4/.test(number)) return "Visa";
     if (/^5[1-5]/.test(number)) return "Mastercard";
@@ -296,8 +303,14 @@
     e.preventDefault();
     clearError();
 
+    const amount = document.getElementById("amountInput").value;
     const rawCard = document.getElementById("cardNumber").value.replace(/\D/g, "");
     const cardType = detectCardType(rawCard);
+
+    if (!amount || parseFloat(amount) <= 0) {
+      showError("Please enter a valid payment amount.");
+      return;
+    }
 
     if (rawCard.length !== 16) {
       showError("Card number must be exactly 16 digits.");
@@ -323,8 +336,7 @@
       amount,
       last4,
       cardType,
-      confirmationCode,
-      agentId
+      confirmationCode
     });
 
     document.getElementById("paymentSection").style.display = "none";
