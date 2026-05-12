@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Payment</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #e0ecff, #f8fbff);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+
+  .header {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    padding: 30px;
+    text-align: center;
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  .header p {
+    margin-top: 8px;
+    opacity: 0.9;
+    font-size: 14px;
+  }
+
+  .content {
+    padding: 28px;
+  }
+
+  .amount-box {
+    background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+    border: 1px solid #dbeafe;
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .amount-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: bold;
+  }
+
+  .amount-value {
+    font-size: 34px;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin-top: 6px;
+  }
+
+  label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background: #fafafa;
+    transition: 0.2s;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+  }
+
+  .row {
+    display: flex;
+    gap: 14px;
+  }
+
+  .row > div {
+    flex: 1;
+  }
+
+  .card-type {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+  }
+
+  button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+  }
+
+  .error {
+    display: none;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .success {
+    display: none;
+    text-align: center;
+    padding: 20px 10px;
+  }
+
+  .success-icon {
+    font-size: 56px;
+  }
+
+  .success h2 {
+    color: #15803d;
+    margin-bottom: 10px;
+  }
+
+  .success-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 16px;
+    border-radius: 14px;
+    color: #166534;
+    font-size: 15px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1>💳 Secure Payment</h1>
+    <p>Complete your payment securely</p>
+  </div>
+
+  <div class="content">
+    <div id="paymentSection">
+      <div class="amount-box">
+        <div class="amount-label">TOTAL DUE</div>
+        <div class="amount-value" id="amountDisplay">$125.00</div>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+
+      <form id="paymentForm">
+        <label>Cardholder Name</label>
+        <input id="cardholderName" required placeholder="John Smith">
+
+        <label>Card Number</label>
+        <input id="cardNumber" required placeholder="1234 5678 9012 3456">
+        <div id="cardTypeArea"></div>
+
+        <div class="row">
+          <div>
+            <label>Expiration</label>
+            <input id="expiration" required placeholder="MM/YY">
+          </div>
+
+          <div>
+            <label>CVV</label>
+            <input id="cvv" required placeholder="123">
+          </div>
+        </div>
+
+        <label>Billing ZIP Code</label>
+        <input id="zipCode" required placeholder="43017">
+
+        <button type="submit">Pay Now</button>
+      </form>
+    </div>
+
+    <div class="success" id="successSection">
+      <div class="success-icon">✅</div>
+      <h2>Payment Received</h2>
+      <div class="success-box" id="confirmationText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+
+  const amount = params.get("amount") || "125.00";
+  const agentId = params.get("agentId") || "";
+
+  document.getElementById("amountDisplay").textContent = "$" + amount;
+
+  function detectCardType(number) {
+    if (/^4/.test(number)) return "Visa";
+    if (/^5[1-5]/.test(number)) return "Mastercard";
+    if (/^6(?:011|5)/.test(number)) return "Discover";
+    return "";
+  }
+
+  function validateExpiration(exp) {
+    const match = exp.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+    if (!match) return false;
+
+    const month = parseInt(match[1]);
+    const year = parseInt("20" + match[2]);
+
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    if (year < currentYear) return false;
+    if (year === currentYear && month < currentMonth) return false;
+
+    return true;
+  }
+
+  function showError(msg) {
+    const error = document.getElementById("errorBox");
+    error.textContent = msg;
+    error.style.display = "block";
+  }
+
+  function clearError() {
+    document.getElementById("errorBox").style.display = "none";
+  }
+
+  document.getElementById("cardNumber").addEventListener("input", function() {
+    let raw = this.value.replace(/\D/g, "").slice(0, 16);
+    this.value = raw.replace(/(.{4})/g, "$1 ").trim();
+
+    const type = detectCardType(raw);
+    const area = document.getElementById("cardTypeArea");
+
+    if (type) {
+      area.innerHTML = `<div class="card-type">${type}</div>`;
+    } else {
+      area.innerHTML = "";
+    }
+  });
+
+  document.getElementById("expiration").addEventListener("input", function() {
+    let raw = this.value.replace(/\D/g, "").slice(0, 4);
+    if (raw.length >= 3) {
+      raw = raw.slice(0,2) + "/" + raw.slice(2);
+    }
+    this.value = raw;
+  });
+
+  document.getElementById("cvv").addEventListener("input", function() {
+    this.value = this.value.replace(/\D/g, "").slice(0, 4);
+  });
+
+  document.getElementById("paymentForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    clearError();
+
+    const rawCard = document.getElementById("cardNumber").value.replace(/\D/g, "");
+    const cardType = detectCardType(rawCard);
+
+    if (rawCard.length !== 16) {
+      showError("Card number must be exactly 16 digits.");
+      return;
+    }
+
+    if (!cardType) {
+      showError("Only Visa, Mastercard, or Discover are supported.");
+      return;
+    }
+
+    if (!validateExpiration(document.getElementById("expiration").value)) {
+      showError("Please enter a valid future expiration date.");
+      return;
+    }
+
+    const last4 = rawCard.slice(-4);
+
+    const confirmationCode =
+      "PAY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    console.log({
+      amount,
+      last4,
+      cardType,
+      confirmationCode,
+      agentId
+    });
+
+    document.getElementById("paymentSection").style.display = "none";
+    document.getElementById("successSection").style.display = "block";
+
+    document.getElementById("confirmationText").innerHTML =
+      `Payment of <strong>$${amount}</strong><br>
+       using <strong>${cardType}</strong> ending in <strong>${last4}</strong><br>
+       Confirmation Code: <strong>${confirmationCode}</strong>`;
+  });
+</script>
+
+</body>
+</html>
