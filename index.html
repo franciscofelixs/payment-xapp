@@ -239,10 +239,17 @@
 </div>
 
 <script>
+  const params = new URLSearchParams(window.location.search);
+  const amountFromUrl = params.get("amount");
+
+  if (amountFromUrl) {
+    document.getElementById("amountInput").value = amountFromUrl;
+  }
+
   function detectCardType(number) {
     if (/^4/.test(number)) return "Visa";
-    if (/^5[1-5]/.test(number)) return "Mastercard";
-    if (/^6(?:011|5)/.test(number)) return "Discover";
+    if (/^5/.test(number)) return "Mastercard";
+    if (/^6/.test(number)) return "Discover";
     return "";
   }
 
@@ -318,7 +325,7 @@
     }
 
     if (!cardType) {
-      showError("Only Visa, Mastercard, or Discover are supported.");
+      showError("Card must start with 4, 5, or 6.");
       return;
     }
 
@@ -331,13 +338,6 @@
 
     const confirmationCode =
       "PAY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-    console.log({
-      amount,
-      last4,
-      cardType,
-      confirmationCode
-    });
 
     document.getElementById("paymentSection").style.display = "none";
     document.getElementById("successSection").style.display = "block";
