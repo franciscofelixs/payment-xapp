@@ -135,11 +135,6 @@
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
-  }
-
-  button:hover {
-    transform: translateY(-2px);
   }
 
   .error {
@@ -165,7 +160,6 @@
 
   .success h2 {
     color: #15803d;
-    margin-bottom: 10px;
   }
 
   .success-box {
@@ -189,16 +183,10 @@
 
   <div class="content">
     <div id="paymentSection">
+
       <div class="amount-box">
         <div class="amount-label">PAYMENT AMOUNT</div>
-        <input
-          id="amountInput"
-          class="amount-input"
-          type="number"
-          min="1"
-          step="0.01"
-          placeholder="Enter amount"
-        />
+        <input id="amountInput" class="amount-input" type="number" min="1" step="0.01" placeholder="Enter amount">
       </div>
 
       <div class="error" id="errorBox"></div>
@@ -239,13 +227,6 @@
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const amountFromUrl = params.get("amount");
-
-  if (amountFromUrl) {
-    document.getElementById("amountInput").value = amountFromUrl;
-  }
-
   function detectCardType(number) {
     if (/^4/.test(number)) return "Visa";
     if (/^5/.test(number)) return "Mastercard";
@@ -270,43 +251,45 @@
     return true;
   }
 
-  function showError(msg) {
-    const error = document.getElementById("errorBox");
-    error.textContent = msg;
-    error.style.display = "block";
+  function showError(message) {
+    const errorBox = document.getElementById("errorBox");
+    errorBox.textContent = message;
+    errorBox.style.display = "block";
   }
 
   function clearError() {
     document.getElementById("errorBox").style.display = "none";
   }
 
-  document.getElementById("cardNumber").addEventListener("input", function() {
+  document.getElementById("cardNumber").addEventListener("input", function () {
     let raw = this.value.replace(/\D/g, "").slice(0, 16);
     this.value = raw.replace(/(.{4})/g, "$1 ").trim();
 
-    const type = detectCardType(raw);
-    const area = document.getElementById("cardTypeArea");
+    const cardType = detectCardType(raw);
+    const cardTypeArea = document.getElementById("cardTypeArea");
 
-    if (type) {
-      area.innerHTML = `<div class="card-type">${type}</div>`;
+    if (cardType) {
+      cardTypeArea.innerHTML = `<div class="card-type">${cardType}</div>`;
     } else {
-      area.innerHTML = "";
+      cardTypeArea.innerHTML = "";
     }
   });
 
-  document.getElementById("expiration").addEventListener("input", function() {
+  document.getElementById("expiration").addEventListener("input", function () {
     let raw = this.value.replace(/\D/g, "").slice(0, 4);
+
     if (raw.length >= 3) {
-      raw = raw.slice(0,2) + "/" + raw.slice(2);
+      raw = raw.slice(0, 2) + "/" + raw.slice(2);
     }
+
     this.value = raw;
   });
 
-  document.getElementById("cvv").addEventListener("input", function() {
+  document.getElementById("cvv").addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 4);
   });
 
-  document.getElementById("paymentForm").addEventListener("submit", function(e) {
+  document.getElementById("paymentForm").addEventListener("submit", function (e) {
     e.preventDefault();
     clearError();
 
@@ -325,7 +308,7 @@
     }
 
     if (!cardType) {
-      showError("Card must start with 4, 5, or 6.");
+      showError("Card must start with 4 for Visa, 5 for Mastercard, or 6 for Discover.");
       return;
     }
 
@@ -335,9 +318,7 @@
     }
 
     const last4 = rawCard.slice(-4);
-
-    const confirmationCode =
-      "PAY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const confirmationCode = "PAY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     document.getElementById("paymentSection").style.display = "none";
     document.getElementById("successSection").style.display = "block";
